@@ -1,0 +1,58 @@
+<h2>List of known Firms</h2>
+
+  <div class="col-md-12">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th scope="col">Firm Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Address</th>
+          <th scope="col">CVR Number</th>
+          <th scope="col">Phone Number</th>
+          <th scope="col">Mail Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let firm of firms">
+          <td>{{firm.Id}}</td>
+          <td>{{firm.FirmName}}</td>
+          <td>{{firm.Address}}</td>
+          <td>{{firm.CVRNumber}}</td>
+          <td>{{firm.PhoneNumber}}</td>
+          <td>{{firm.FirmMailAddress}}</td>
+
+      </tbody>
+    </table>
+  </div>
+
+
+
+
+<h2>List of Employee Contacts</h2>
+
+<div class="col-md-12">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th scoppe="col">User Id</th>
+        <th scoppe="col">Firm Id</th>
+        <th scoppe="col">Name</th>
+        <th scoppe="col">Phone Number</th>
+        <th scoppe="col">Mail Address</th>
+        <th scoppe="col">Username</th>
+        <th scoppe="col">Password</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let contact of contacts">
+        <td>{{contact.Id}}</td>
+        <td>{{contact.FirmID}}</td>
+        <td>{{contact.NameOfContact}}</td>
+        <td>{{contact.PhoneNumber}}</td>
+        <td>{{contact.MailAddress}}</td>
+        <td>{{contact.Username}}</td>
+        <td>{{contact.Password}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

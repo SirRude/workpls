@@ -1,0 +1,25 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="jumbotron">
+  <a  routerLink = "front" routerLinkActive="active">
+    <h1>WebRTC</h1>
+  </a>
+  <div class="col-md-10"></div>
+  <nav class="nav navbar-nav col-md-2">
+    
+       <a routerLink="meet"     routerLinkActive="active">Meeting </a>
+       <a routerLink="login"    routerLinkActive="active">Login   </a>
+       <a routerLink="data"     routerLinkActive="active">Data   </a>
+       <a routerLink="test"     routerLinkActive="active">Test   </a>
+       <a routerLink="three"     routerLinkActive="active">IFrame   </a>
+
+
+
+   </nav>
+</div>
+<div class="col-md-1"></div>
+<div class="container col-md-10">
+  <router-outlet></router-outlet>
+ 
+</div>  
+

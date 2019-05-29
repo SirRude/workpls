@@ -1,0 +1,142 @@
+import { Injectable } from '@angular/core';
+import * as Rx from "rxjs/Rx";
+
+@Injectable()
+export class WebsocketService {
+
+  constructor() { }
+
+  private subject: Rx.Subject<MessageEvent>;
+
+  public connect(url): Rx.Subject<MessageEvent> {
+    if (!this.subject) {
+      this.subject = this.create(url);
+      console.log("Successfully connected: " + url);
+    }
+    return this.subject;
+  }
+
+  private create(url): Rx.Subject<MessageEvent> {
+    let ws = new WebSocket(url);
+
+    let observable = Rx.Observable.create((obs: Rx.Observer<MessageEvent>) => {
+      ws.onmessage = obs.next.bind(obs);
+      ws.onerror = obs.error.bind(obs);
+      ws.onclose = obs.complete.bind(obs);
+      return ws.close.bind(ws);
+    });
+    let observer = {
+      next: (data: Object) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(data));
+        }
+      }
+    };
+    return Rx.Subject.create(observer, observable);
+  }
+
+  var Constants = {
+    // Action type for remote web socket communication.
+    WS_ACTION: 'ws',
+    // Action type for remote xhr communication.
+    XHR_ACTION: 'xhr',
+    // Action type for adding a command to the remote clean up queue.
+    QUEUEADD_ACTION: 'addToQueue',
+    // Action type for clearing the remote clean up queue.
+    QUEUECLEAR_ACTION: 'clearQueue',
+    // Web socket action type specifying that an event occured.
+    EVENT_ACTION: 'event',
+  
+    // Web socket action type to create a remote web socket.
+    WS_CREATE_ACTION: 'create',
+    // Web socket event type onerror.
+    WS_EVENT_ONERROR: 'onerror',
+    // Web socket event type onmessage.
+    WS_EVENT_ONMESSAGE: 'onmessage',
+    // Web socket event type onopen.
+    WS_EVENT_ONOPEN: 'onopen',
+    // Web socket event type onclose.
+    WS_EVENT_ONCLOSE: 'onclose',
+    // Web socket event sent when an error occurs while calling send.
+    WS_EVENT_SENDERROR: 'onsenderror',
+    // Web socket action type to send a message on the remote web socket.
+    WS_SEND_ACTION: 'send',
+    // Web socket action type to close the remote web socket.
+    WS_CLOSE_ACTION: 'close'
+  };
+
+// This class is used as a proxy for the WebSocket owned by background.js.
+// This proxy class sends commands and receives events via a Port object
+// opened to communicate with background.js in a Chrome App.
+// The WebSocket object must be owned by background.js so the call can be
+// properly terminated when the app window is closed.
+var RemoteWebSocket = function(wssUrl, wssPostUrl) {  
+  this.wssUrl_ = wssUrl;
+  apprtc.windowPort.addMessageListener(this.handleMessage_.bind(this));
+  this.sendMessage_({
+    action: Constants.WS_ACTION,
+    wsAction: Constants.WS_CREATE_ACTION,
+    wssUrl: wssUrl,
+    wssPostUrl: wssPostUrl
+  });
+  this.readyState = WebSocket.CONNECTING;
+};
+
+RemoteWebSocket.prototype.sendMessage_ = function(message) {
+  apprtc.windowPort.sendMessage(message);
+};
+
+RemoteWebSocket.prototype.send = function(data) {
+  if (this.readyState !== WebSocket.OPEN) {
+    throw 'Web socket is not in OPEN state: ' + this.readyState;
+  }
+  this.sendMessage_({
+    action: Constants.WS_ACTION,
+    wsAction: Constants.WS_SEND_ACTION,
+    data: data
+  });
+};
+
+RemoteWebSocket.prototype.close = function() {
+  if (this.readyState === WebSocket.CLOSING ||
+      this.readyState === WebSocket.CLOSED) {
+    return;
+  }
+  this.readyState = WebSocket.CLOSING;
+  this.sendMessage_({
+    action: Constants.WS_ACTION,
+    wsAction: Constants.WS_CLOSE_ACTION
+  });
+};
+
+RemoteWebSocket.prototype.handleMessage_ = function(message) {
+  if (message.action === Constants.WS_ACTION &&
+        message.wsAction === Constants.EVENT_ACTION) {
+    if (message.wsEvent === Constants.WS_EVENT_ONOPEN) {
+      this.readyState = WebSocket.OPEN;
+      if (this.onopen) {
+        this.onopen();
+      }
+    } else if (message.wsEvent === Constants.WS_EVENT_ONCLOSE) {
+      this.readyState = WebSocket.CLOSED;
+      if (this.onclose) {
+        this.onclose(message.data);
+      }
+    } else if (message.wsEvent === Constants.WS_EVENT_ONERROR) {
+      if (this.onerror) {
+        this.onerror(message.data);
+      }
+    } else if (message.wsEvent === Constants.WS_EVENT_ONMESSAGE) {
+      if (this.onmessage) {
+        this.onmessage(message.data);
+      }
+    } else if (message.wsEvent === Constants.WS_EVENT_SENDERROR) {
+      if (this.onsenderror) {
+        this.onsenderror(message.data);
+      }
+      trace('ERROR: web socket send failed: ' + message.data);
+    }
+  }
+};
+
+}
